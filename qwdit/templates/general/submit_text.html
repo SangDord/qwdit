@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title> Submit to qwdit </title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="{{ url_for('static', filename='css/forms.css') }}">
+{% endblock head %}
+
+{% block content %}
+    <div class="form-container">
+        <div class="title"> Create a post </div>
+        <div class="other-post">
+            <a role="button" class="btn btn-outline-secondary" href="/submit/img"> Go to create an image post </a>
+        </div>
+        <div class="form-block">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <p>
+                    {{ form.title(class="form-control", placeholder=form.title.label.text) }}<br>
+                    {% for error in form.title.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </p>
+                <p>
+                    {{ form.text(class="form-control", placeholder=form.text.label.text, rows="6") }}<br>
+                    {% for error in form.text.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </p>
+                <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                <div class="status-msg">{{ message }}</div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
