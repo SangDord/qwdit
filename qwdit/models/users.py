@@ -16,6 +16,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     username = sa.Column(sa.String(100))
     email = sa.Column(sa.String)
     about = sa.Column(sa.String, default='')
+    avatar = sa.Column(sa.String, nullable=True)
     hashed_password = sa.Column(sa.String)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+
+{% block head %}
+    <title> qwdit homepage </title>
+{% endblock head %}
+
+{% block content %}
+    <div class="title"> Qwdit posts </div>
+    <div class="container">
+        {% for post in posts %}
+            <div class="post-wrap border border-5">
+            {% if post.category == 'text' %}
+                <a class="post-title">
+                    {{ post.title }}
+                </a>
+                <p class="post-body-text">
+                    {{ post.body }}
+                </p>
+            {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

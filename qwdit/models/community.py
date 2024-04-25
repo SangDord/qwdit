@@ -11,7 +11,9 @@ class Community(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'communities'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    name = sa.Column(sa.String(100))
+    name = sa.Column(sa.String(32))
+    about = sa.Column(sa.String, default='')
+    avatar = sa.Column(sa.String, nullable=True)
     creator_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     
@@ -20,7 +22,7 @@ class Community(SqlAlchemyBase, SerializerMixin):
     
     def __init__(self, name, creator_id):
         self.name = name
-        self.creator = creator_id
+        self.creator_id = creator_id
 
 
 class Community_follows(SqlAlchemyBase):

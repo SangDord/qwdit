@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title> Communities </title>
+{% endblock head %}
+
+{% block content %}
+    <div class="title"> Communities </div>
+    <div class="container">
+        {% for community in communities %}
+            <div class="community-wrap border border-5">
+                <a class="community-name"> {{ community.name }} </a>
+                {% if community.about %}
+                    <p class="community-about"> {{ community.about }} </p>
+                {% endif %}
+                <a class="link" href="/user/{{ community.creator.username }}">
+                    Creator - <span> {{ community.creator.username }} </span>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

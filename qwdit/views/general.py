@@ -1,7 +1,6 @@
 from flask import (Blueprint, render_template, redirect, flash,
-                   url_for, request)
+                   url_for, request, abort)
 from flask_login import login_user, logout_user, current_user, login_required
-
 from qwdit.forms import LoginForm, SignupForm, SubmitTextForm, SubmitImgForm
 from qwdit import database
 from qwdit.models.users import User
@@ -12,15 +11,21 @@ bp = Blueprint('general', __name__)
 
 @bp.route('/')
 def index():
-    return render_template('general/index.html')
+    return redirect('/home')
+
+@bp.route('/home')
+def home():
+    db_session = database.create_session()
+    posts: list[Post] = db_session.query(Post).all()
+    return render_template('general/home.html', posts=posts)
 
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        session = database.create_session()
-        user: User = session.query(User).filter(User.email == form.email.data).first()
+        db_session = database.create_session()
+        user: User = db_session.query(User).filter(User.email == form.email.data).first()
         if not user:
             return render_template('general/login.html', form=form, message="Wrong email. User not found")
         if not user.verify_password(form.password.data):
@@ -52,22 +57,19 @@ def signup():
 @login_required
 def logout():
     logout_user()
-    redirect('/')
+    return redirect('/')
     
 
-@bp.route('/submit/text')
+@bp.route('/account')
 @login_required
-def submit_text():
-    form = SubmitTextForm()
-    if form.validate_on_submit():
-        pass
-    return render_template('general/submit_text.html', form=form)
+def account():
+    return redirect('/user/' + current_user.username)
 
 
-@bp.route('/submit/img')
-@login_required
-def submit_img():
-    form = SubmitImgForm()
-    if form.validate_on_submit():
-        pass
-    return render_template('general/submit_img.html', form=form)
+@bp.route('/user/<string:username>')
+def profile(username):
+    db_session = database.create_session()
+    user: User = db_session.query(User).filter(User.username == username).first()
+    if not user:
+        abort(404)
+    return render_template('general/profile.html', user=user)

@@ -17,13 +17,6 @@
     max-width: 400px;
 }
 
-.title {
-    font-size: 2.4rem;
-    font-weight: 600;
-    margin-top: 20px;
-    margin-bottom: 60px;
-}
-
 .status-msg {
     color: red;
 }

@@ -19,7 +19,7 @@ class Post(SqlAlchemyBase, SerializerMixin):
     author = relationship('User')
     community_post = relationship('Community_post', back_populates='post')
     
-    def __init__(self, user_id, title, body, category):
+    def __init__(self, author_id, title, body, category):
         self.author_id = author_id
         self.title = title
         self.body = body

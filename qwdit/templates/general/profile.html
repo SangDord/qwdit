@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title> {{ user.username }}'s profile qwdit </title>
+{% endblock head %}
+
+{% block content %}
+    <h1> Joined at {{ user.created_at }} </h1>
+{% endblock content %}

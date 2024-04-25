@@ -20,6 +20,10 @@ class SignupForm(FlaskForm):
     agree = BooleanField()
     # recaptcha = RecaptchaField()
     submit = SubmitField('Sign up')
+    
+    
+class EditUserProfileForm(FlaskForm):
+    pass
 
 
 class SubmitTextForm(FlaskForm):
@@ -35,4 +39,10 @@ class SubmitImgForm(FlaskForm):
     
     
 class CommunityCreateForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    about = TextAreaField('About')
+    submit = SubmitField('Submit')
+    
+    
+class EditCommunityProfileForm(FlaskForm):
     pass

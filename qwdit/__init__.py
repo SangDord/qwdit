@@ -40,4 +40,7 @@ def not_found(error):
     return render_template('errors/404.html'), 404
 
 from qwdit.views import general
+from qwdit.views import community
+
 app.register_blueprint(general.bp)
+app.register_blueprint(community.bp)
