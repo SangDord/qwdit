@@ -2,8 +2,50 @@
 
 {% block head %}
     <title> {{ user.username }}'s profile qwdit </title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="{{ url_for('static', filename='css/userprofile.css') }}">
 {% endblock head %}
 
 {% block content %}
-    <h1> Joined at {{ user.created_at }} </h1>
+    <div class="container">
+        <div class="title">
+            Welcome to {{ user.username }} profile
+        </div>
+        <div class="overview">
+            <div class="avatar">
+                <img src="/static/img/avatars/{{ user.avatar }}" width="200" heigth="200">
+            </div>
+            <div class="disc">
+                <h4> About {{ user.username }} </h4>
+                <p> {% if user.about %} {{ user.about }} {% else %} There's nothing here...  {% endif %} </p> <br>
+                <p> Joined at {{ user.created_at.date() }} </p>
+                {% if current_user == user %}
+                    <a class="btn btn-outline-secondary" href="/settings"> Edit profile </a>
+                    <a class="btn btn-outline-secondary" href="/settings/reset_av"> Reset avatar </a> 
+                {% endif %}
+            </div>
+        </div>
+        <div class="title">
+            {{ user.username }}'s posts
+        </div>
+        <div class="overview-posts">
+            {% if user.created_posts %}
+                {% for post in user.created_posts %}
+                    <div class="post-wrap border border-5">
+                    {% if post.category == 'text' %}
+                        <a class="post-title">
+                            {{ post.title }}
+                        </a>
+                        <p class="post-body-text">
+                            {{ post.body }}
+                        </p>
+                    {% endif %}
+                    </div> <br>
+                {% endfor %}
+            {% else %}
+                There's nothing here...
+            {% endif %}
+        </div>
+    </div>
 {% endblock content %}

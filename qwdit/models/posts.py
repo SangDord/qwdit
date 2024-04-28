@@ -11,10 +11,10 @@ class Post(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'posts'
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    title = sa.Column(sa.String(200))
+    title = sa.Column(sa.String(100))
     body = sa.Column(sa.String)
     category = sa.Column(sa.String)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     
     author = relationship('User')
     community_post = relationship('Community_post', back_populates='post')

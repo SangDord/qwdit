@@ -9,7 +9,7 @@
     <div class="container">
         {% for community in communities %}
             <div class="community-wrap border border-5">
-                <a class="community-name"> {{ community.name }} </a>
+                <a class="community-name" href="/c/{{ community.name }}"> {{ community.name }} </a>
                 {% if community.about %}
                     <p class="community-about"> {{ community.about }} </p>
                 {% endif %}

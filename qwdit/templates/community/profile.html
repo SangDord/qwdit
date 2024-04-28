@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title> {{ community.name }} </title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="{{ url_for('static', filename='css/communityprofile.css') }}">
+{% endblock head %}
+
+{% block content %}
+<div class="container">
+    <div class="title">
+        Welcome to {{ community.name }}
+    </div>
+    <div class="overview">
+        <div class="avatar">
+            <img src="/static/img/avatars/{{ community.avatar }}" width="200" heigth="200">
+        </div>
+        <div class="disc">
+            <h4> About {{ community.name }} </h4>
+            <p> {% if community.about %} {{ community.about }} {% else %} There's nothing here...  {% endif %} </p> <br>
+            <p> Joined at {{ community.created_at.date() }} </p>
+            {% if current_user == community.creator %}
+                <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/settings"> Edit profile </a>
+                <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/settings"> Reset avatar </a> 
+            {% endif %}
+        </div>
+    </div>
+    <div class="title">
+        {{ community.name }}'s posts
+    </div>
+    <div class="overview-posts">
+        {% if community.created_posts %}
+            {% for community_post in community.created_posts %}
+                <div class="post-wrap border border-5">
+                {% if community_post.post.category == 'text' %}
+                    <a class="post-title">
+                        {{ community_post.post.title }}
+                    </a>
+                    <p class="post-body-text">
+                        {{ community_post.post.body }}
+                    </p>
+                {% endif %}
+                </div> <br>
+            {% endfor %}
+        {% else %}
+            There's nothing here...
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

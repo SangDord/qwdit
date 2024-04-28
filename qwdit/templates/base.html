@@ -4,64 +4,80 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"> 
         {% block head %}{% endblock head %}
+        <link rel="icon" href="{{ url_for('static', filename='img/icons/logo.svg') }}" type="image/svg+xml">
         <link rel="stylesheet"
               type="text/css",
-              href="{{ url_for('static', filename='css/main.css')}}">
+              href="{{ url_for('static', filename='css/main.css') }}">
         <link rel="stylesheet",
               type="text/css",
-              href="{{ url_for('static', filename='css/bootstrap.css')}}">
+              href="{{ url_for('static', filename='css/bootstrap.css') }}">
         <link rel="stylesheet",
               type="text/css",
-              href="{{ url_for('static', filename='css/font-awesome.css')}}"
-        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js')}}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.js')}}"></script>
+              href="{{ url_for('static', filename='css/font-awesome.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
     <body>
-        <header>
-            <div class="navbar navbar-expand-lg bg-body-tertiary">
-                <div class="container-fluid navbar-inverse">
-                    <a href="/home" class="logo">
-                        <img src={{ url_for('static', filename='img/icons/logo.svg')}}>
-                    </a>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-2">
-                            <li class="nav-item">
-                                <a class="nav-link text-light" href="/home">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" href="/communities">Communities</a>
-                            </li>
-                        </ul>
-                        {% if current_user.is_authenticated %}
-                            <a class="navbar-brand btn btn-outline-secondary text-light" href="/submit/text"> Create a post <i class="fa fa-plus-circle" aria-hidden="true"></i> </a>
-                            <a class="navbar-brand btn btn-outline-secondary text-light" href="/c/create"> Create a community <i class="fa fa-plus-circle" aria-hidden="true"></i> </a>
-                        {% else %}
-                            <a class="navbar-brand btn btn-inline-success text-light" href="/login"> Log in </a>
-                            <a  class="navbar-brand btn btn-outline-primary text-light" href="/signup"> Sign up </a>
-                        {% endif %}
-                        {% if current_user.is_authenticated %}
-                            <div class="dropdown user">
-                                <button class="btn btn-secondary dropdown-toggle"
-                                        type="button" id="dropdownMenuBtn" data-bs-toggle="dropdown"
-                                        aria-expanded="false">
-                                    Avatar
-                                </button>
-
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuBtn">
-                                    <li> <a class="dropdown-item primary-link" href="/user/{{ current_user.username }}"> Profile </a> </li>
-                                    <li> <hr class="dropdown-divider"> </li>
-                                    <li> <a class="dropdown-item secondary-link" href="https://github.com/sangdord/qwdit"> github </a> </li>
-                                    <li> <a class="dropdown-item secondary-link" href="/logout"> Logout </a> </li>
-                                </ul>
+        <div class="navbar navbar-expand-lg">
+            <div class="container-fluid navbar-inverse">
+                <a href="/home" class="logo">
+                    <img src={{ url_for('static', filename='img/icons/logo.svg') }}>
+                </a>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-2">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="/home">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="/communities">Communities</a>
+                        </li>
+                    </ul>
+                    {% if current_user.is_authenticated %}
+                        <a class="navbar-brand btn btn-outline-secondary text-light" href="/submit/text"> Create a post <i class="fa fa-plus-circle" aria-hidden="true"></i> </a>
+                        <a class="navbar-brand btn btn-outline-secondary text-light" href="/c/create"> Create a community <i class="fa fa-plus-circle" aria-hidden="true"></i> </a>
+                    {% else %}
+                        <a class="navbar-brand btn btn-inline-success text-light" href="/login"> Log in </a>
+                        <a  class="navbar-brand btn btn-outline-primary text-light" href="/signup"> Sign up </a>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                        <div class="dropdown user">
+                            <div class="btn dropdown-toggle" id="dropdownMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img class="nav-circle-view" src="/static/img/avatars/{{ current_user.avatar }}">
                             </div>
-                        {% endif %}
+
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuBtn">
+                                <li> <a class="dropdown-item primary-link" href="/user/{{ current_user.username }}"> Profile </a> </li>
+                                <li> <a class="dropdown-item primary-link" href="/settings"> Settings </a> </li>
+                                <li> <hr class="dropdown-divider"> </li>
+                                <li> <a class="dropdown-item secondary-link" href="https://github.com/sangdord/qwdit"> Github </a> </li>
+                                <li> <a class="dropdown-item secondary-link" href="/logout"> Logout </a> </li>
+                            </ul>
                         </div>
+                    {% endif %}
                     </div>
                 </div>
             </div>
-        </header>
+        </div>
+        <div>
+            <!-- Begin alerts -->                
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <script>
+                Swal.fire({
+                    title:"{{ category.title() }}!",
+                    // success , error , warning ,info
+                    text: "{{ message }}",
+                    icon: "{{ category }}" == "danger" ? "error" : "{{ category }}"
+                })
+            </script>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
         <!-- Begin page content -->
-        <main role="main" class="container">
+        <main role="main" class="page-content">
             {% block content %}{% endblock content %}
         </main>
     </body>

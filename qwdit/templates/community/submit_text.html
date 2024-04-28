@@ -14,8 +14,16 @@
             <a role="button" class="btn btn-outline-secondary" href="/submit/img"> Go to create an image post </a>
         </div>
         <div class="form-block">
-            <form method="POST">
+            <form method="POST" novalidate>
                 {{ form.hidden_tag() }}
+                <p>
+                    If you want to post in only your profile, keep it empty <br>
+                    {{ form.community(class="form-control", placeholder=form.community.label.text) }}<br>
+                    {% for error in form.community.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
                 <p>
                     {{ form.title(class="form-control", placeholder=form.title.label.text) }}<br>
                     {% for error in form.title.errors %}

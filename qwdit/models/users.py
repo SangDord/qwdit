@@ -13,15 +13,15 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    username = sa.Column(sa.String(100))
+    username = sa.Column(sa.String(20))
     email = sa.Column(sa.String)
-    about = sa.Column(sa.String, default='')
-    avatar = sa.Column(sa.String, nullable=True)
+    about = sa.Column(sa.String(300), default='')
+    avatar = sa.Column(sa.String, default='defaultuav.png')
     hashed_password = sa.Column(sa.String)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     
-    created_community = relationship('Community', back_populates='creator')
-    created_post = relationship('Post', back_populates='author')
+    created_communities = relationship('Community', back_populates='creator')
+    created_posts = relationship('Post', back_populates='author')
     
     def __init__(self, username, email, password):
         self.username = username

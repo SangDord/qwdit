@@ -2,11 +2,11 @@ from flask import (Blueprint, render_template, redirect, flash,
                    url_for, request, abort)
 from flask_login import login_user, logout_user, current_user, login_required
 
-from qwdit.forms import SubmitTextForm, SubmitImgForm, CommunityCreateForm
+from qwdit.forms import SubmitTextForm, SubmitImgForm, CommunityCreateForm, EditCommunityProfileForm
 from qwdit import database
 
 from qwdit.models.users import User
-from qwdit.models.posts import Post
+from qwdit.models.posts import Post, Community_post
 from qwdit.models.community import Community
 
 
@@ -26,6 +26,10 @@ def submit_text():
             category='text'
         )
         db_session.add(post)
+        if form.community.data:
+            community: Community = db_session.query(Community).filter(Community.name == form.community.data).first()
+            community_post = Community_post(post.id, community.id)
+            db_session.add(community_post)
         db_session.commit()
         return redirect('/')
     return render_template('community/submit_text.html', form=form)
@@ -46,12 +50,6 @@ def create_community():
     form = CommunityCreateForm()
     if form.validate_on_submit():
         db_session = database.create_session()
-        if len(form.name.data) > 32:
-            return render_template('community/create.html', form=form,
-                                   message="Name is too long. Use less or equal to 32")
-        if db_session.query(Community).filter(Community.name == form.name.data).first():
-            return render_template('community/create.html', form=form,
-                                   message="Community with this name is already exist")
         community = Community(name=form.name.data, creator_id=current_user.id)
         if form.about.data:
             community.about = form.about.data
@@ -74,7 +72,7 @@ def community_profile(community_name):
     community = db_session.query(Community).filter(Community.name == community_name).first()
     if not community:
         abort(404)
-    return render_template('community/profile', community=community)
+    return render_template('community/profile.html', community=community)
 
 
 @bp.route('/c/<string:community_name>/comments/<int:post_id>')

@@ -11,14 +11,14 @@ class Community(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'communities'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    name = sa.Column(sa.String(32))
-    about = sa.Column(sa.String, default='')
-    avatar = sa.Column(sa.String, nullable=True)
+    name = sa.Column(sa.String(20))
+    about = sa.Column(sa.String(300), default='')
+    avatar = sa.Column(sa.String, default='defaultcav.png')
     creator_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     
     creator = relationship('User')
-    created_post = relationship('Community_post', back_populates='community')
+    created_posts = relationship('Community_post', back_populates='community')
     
     def __init__(self, name, creator_id):
         self.name = name
