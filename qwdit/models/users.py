@@ -6,7 +6,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from sqlalchemy_serializer import SerializerMixin
 
-from qwdit.database import SqlAlchemyBase
+from qwdit.database import SqlAlchemyBase, create_session
+
+
+class Followers(SqlAlchemyBase):
+    __tablename__ = 'followers'
+    
+    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+    follower_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
+    followed_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    
+    def __init__(self, flr, fld):
+        self.follower_id = flr
+        self.followed_id = fld
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
@@ -22,7 +35,33 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     
     created_communities = relationship('Community', back_populates='creator')
     created_posts = relationship('Post', back_populates='author')
+    created_comments = relationship('Comment', back_populates='author')
     
+    followed = relationship('User', secondary='followers',
+                            primaryjoin=(Followers.follower_id == id),
+                            secondaryjoin=(Followers.followed_id == id),
+                            backref="followed_id")
+    
+    
+    def is_following(self, user):
+        session = create_session()
+        return session.query(Followers).filter(Followers.followed_id == self.id,
+                                               Followers.follower_id == user.id).count() > 0
+    
+    def follow(self, user):
+        if not self.is_following(user):
+            session = create_session()
+            session.add(Followers(user.id, self.id))
+            session.commit()
+    
+    def unfollow(self, user):
+        if self.is_following(user):
+            session = create_session()
+            followers = session.query(Followers).filter(Followers.followed_id == self.id,
+                                                        Followers.follower_id == user.id).first()
+            session.delete(followers)
+            session.commit()
+            
     def __init__(self, username, email, password):
         self.username = username
         self.email = email
@@ -39,14 +78,3 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
         pass
 
 
-class User_follows(SqlAlchemyBase):
-    __tablename__ = 'user_follows'
-    
-    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    following_user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    followed_user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    
-    def __init__(self, flg, fld):
-        self.following_user_id = flg
-        self.followed_user_id = fld

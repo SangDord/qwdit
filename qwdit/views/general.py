@@ -2,10 +2,10 @@ from flask import (Blueprint, render_template, redirect, flash,
                    url_for, request, abort)
 from flask_login import login_user, logout_user, current_user, login_required
 
-from qwdit.forms import LoginForm, SignupForm, EditUserProfileForm
+from qwdit.forms import LoginForm, SignupForm, EditUserProfileForm, CommentCreateForm
 from qwdit import database
-from qwdit.models.users import User
-from qwdit.models.posts import Post
+from qwdit.models.users import User, Followers
+from qwdit.models.posts import Post, PostScore, Comment
 from qwdit import app
 
 import os
@@ -68,7 +68,14 @@ def signup():
 def logout():
     logout_user()
     return redirect('/')
-    
+
+
+@bp.route('/users')
+def user_list():
+    db_session = database.create_session()
+    users: list[User] = db_session.query(User).all()
+    return render_template('general/user_list.html', users=users)
+
 
 @bp.route('/account')
 @login_required
@@ -82,7 +89,9 @@ def profile(username):
     user: User = db_session.query(User).filter(User.username == username).first()
     if not user:
         abort(404)
-    return render_template('general/profile.html', user=user)
+    followers = db_session.query(Followers).filter(Followers.followed_id == user.id).count()
+    following = db_session.query(Followers).filter(Followers.follower_id == user.id).count()
+    return render_template('general/profile.html', user=user, followers=followers, following=following)
 
 
 @bp.route('/settings', methods=['GET', 'POST'])
@@ -134,3 +143,120 @@ def reset_av():
     db_session.commit()
     flash('You have successfully reset avatar', 'success')
     return redirect('/account')
+
+
+@bp.route('/user/<string:username>/follow')
+@login_required
+def follow(username):
+    db_session = database.create_session()
+    user: User = db_session.query(User).filter(User.username == username).first()
+    if not user:
+        abort(404)
+    if user == current_user:
+        abort(400)
+    user.follow(current_user)
+    return redirect(f'/user/{username}')
+
+
+@bp.route('/user/<string:username>/unfollow')
+@login_required
+def unfollow(username):
+    db_session = database.create_session()
+    user: User = db_session.query(User).filter(User.username == username).first()
+    if not user:
+        abort(404)
+    if user == current_user:
+        abort(400)
+    user.unfollow(current_user)
+    return redirect(f'/user/{username}')
+
+
+@bp.route('/user/<string:username>/comments/<int:post_id>', methods=['GET', 'POST'])
+def user_post_comments(username, post_id):
+    db_session = database.create_session()
+    user: User = db_session.query(User).filter(User.username == username).first()
+    post: Post = db_session.query(Post).filter(Post.id == post_id).first()
+    if not user or not post:
+        abort(404)
+    form = CommentCreateForm()
+    if form.validate_on_submit():
+        if not current_user.is_authenticated:
+            abort(401)
+        comment = Comment(post_id=post.id,
+                          user_id=current_user.id,
+                          body=form.body.data)
+        db_session.add(comment)
+        db_session.commit()
+    return render_template('general/comments.html', form=form, post=post)
+
+
+def uprate_post(username, post_id):
+    db_session = database.create_session()
+    user: User = db_session.query(User).filter(User.username == username).first()
+    post: Post = db_session.query(Post).filter(Post.id == post_id).first()
+    if not user or not post:
+        abort(404)
+    flag = None
+    for score in post.scores:
+        if score.user == current_user:
+            flag = score.liked
+            if score.liked is True:
+                db_session.delete(score)
+            elif score.liked is False:
+                score.liked = True
+            break
+    if flag is None:
+        score = PostScore(user_id=current_user.id,
+                          post_id=post_id,
+                          liked=True)
+        db_session.add(score)
+    db_session.commit()
+
+
+def downrate_post(username, post_id):
+    db_session = database.create_session()
+    user: User = db_session.query(User).filter(User.username == username).first()
+    post: Post = db_session.query(Post).filter(Post.id == post_id).first()
+    if not user or not post:
+        abort(404)
+    flag = None
+    for score in post.scores:
+        if score.user == current_user:
+            flag = score.liked
+            if score.liked is False:
+                db_session.delete(score)
+            elif score.liked is True:
+                score.liked = False
+            break
+    if flag is None:
+        score = PostScore(user_id=current_user.id,
+                          post_id=post_id,
+                          liked=False)
+        db_session.add(score)
+    db_session.commit()
+
+
+@app.route('/user/<string:username>/comments/<int:post_id>/uprate/home')
+@login_required
+def uprate_post_home(username, post_id):
+    uprate_post(username, post_id)
+    return redirect('/home')
+
+
+@app.route('/user/<string:username>/comments/<int:post_id>/downrate/home')
+@login_required
+def downrate_post_home(username, post_id):
+    downrate_post(username, post_id)
+    return redirect('/home')
+
+
+@app.route('/user/<string:username>/comments/<int:post_id>/uprate/user')
+def uprate_post_user(username, post_id):
+    uprate_post(username, post_id)
+    return redirect(f'/user/{username}')
+
+
+@app.route('/user/<string:username>/comments/<int:post_id>/downrate/user')
+def downrate_post_user(username, post_id):
+    downrate_post(username, post_id)
+    return redirect(f'/user/{username}')

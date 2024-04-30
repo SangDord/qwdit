@@ -26,7 +26,7 @@ def email_check(email):
 
 
 def communityname_check(communityname):
-    communityname_pattern = r"^[a-zA-Z0-9]+[a-zA-Z0-9#()&$@?!\^|\\/;:\'\"\[\]\ _+-]+"
+    communityname_pattern = r"^[a-zA-Z0-9]+[a-zA-Z0-9#()&$@?!\^|\\/;:\'\"\[\]_+-]+"
     return fullmatch(communityname_pattern, communityname)
 
 
@@ -155,4 +155,29 @@ class CommunityCreateForm(FlaskForm):
 
 
 class EditCommunityProfileForm(FlaskForm):
-    pass
+    avatar = FileField('Avatar', description="Allowed formats: .jpg, .png. Max size: 2mb",
+                       validators=[FileAllowed(['jpg', 'png'])])
+    name = StringField('Name', validators=[DataRequired(), Length(min=3, max=20)])
+    about = TextAreaField('About', validators=[Length(max=300)])
+    submit = SubmitField('Submit')
+    
+    def validate_name(self, name):
+        db_session = create_session()
+        if not communityname_check(name.data):
+            raise ValidationError('That name is incorrect. For first letter use only lowercase and \
+                uppercase letters, numbers')
+        if len(name.data) > 20:
+            raise ValidationError('That name is very long. Use less or equal to 20 characters')
+            
+    def validate_about(self, about):
+        if len(about.data) > 300:
+            raise ValidationError('About is very long. Use less or equal to 300 characters')
+        
+        
+class CommentCreateForm(FlaskForm):
+    body = TextAreaField('Comment', validators=[Length(min=3, max=150)])
+    submit = SubmitField('Submit')
+    
+    def validate_body(self, body):
+        if len(body.data) > 150:
+            raise ValidationError('Comment is very long. Use less or equal to 150 characters')

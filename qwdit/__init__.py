@@ -24,6 +24,8 @@ api.add_resource(users_api.UserLogoutResource, '/api/logout')
 
 api.add_resource(posts_api.PostsResource, '/api/posts/<int:post_id>')
 api.add_resource(posts_api.PostsListResource, '/api/posts')
+api.add_resource(posts_api.PostCommentsResource, '/api/posts/comments/<int:comment_id>')
+api.add_resource(posts_api.PostCommentsListResource, '/api/posts/comments')
 
 api.add_resource(communities_api.CommunitiesResource, '/api/communities/<int:community_id>')
 api.add_resource(communities_api.CommunitiesListResource, '/api/communities')

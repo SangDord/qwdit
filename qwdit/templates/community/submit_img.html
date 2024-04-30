@@ -19,18 +19,14 @@
                 <p>
                     {{ form.title(class="form-control", placeholder=form.title.label.text) }}<br>
                     {% for error in form.title.errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ error }}
-                        </div>
+                        <span style="color: red;">{{ error }}</span><br>
                     {% endfor %}
                 </p>
                 <p>
                     {{ form.img.label() }}
                     {{ form.img(class="form-control") }}<br>
                     {% for error in form.img.errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ error }}
-                        </div>
+                        <span style="color: red;">{{ error }}</span><br>
                     {% endfor %}
                 </p>
                 <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title> {{ post.title }} · qwdit </title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="{{ url_for('static', filename='css/comments.css') }}">
+{% endblock head %}
+
+{% block content %}
+    <div class="container">
+        <div class="post">
+            <div class="post-wrap" >
+                <div class="post-head">
+                    <a class="credit" href="/user/{{ post.author.username }}">
+                        <img class="credit-avatar" src="/static/img/avatars/{{ post.author.avatar }}">
+                        <div class="credit-title"> u/{{ post.author.username }} </div>
+                    </a>
+                    <div class="post-date">
+                        {{ post.created_at.date() }}
+                    </div>
+                    {% if current_user.is_authenticated %}
+                        <div class="dropdown dropdown-post">
+                            <div class="btn dropdown-toggle" id="dropdownPostMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                ---
+                            </div>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownPostMenuBtn">
+                                <li> <a class="dropdown-item primary-link" href="/user/{{ post.author.username }}/follow"> Follow to author </a> </li>
+                                {% if post.author == current_user %}
+                                    <li> <hr class="dropdown-divider"> </li>
+                                    <li> <a class="dropdown-item secondary-link" href="/"> Delete </a> </li>
+                                    <li> <a class="dropdown-item secondary-link" href="/"> Edit </a> </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+                <a class="post-content">
+                    {% if post.category == 'text' %}
+                        <div class="post-title">
+                            {{ post.title }}
+                        </div>
+                        <div class="post-body-text">
+                            {{ post.body }}
+                        </div>
+                    {% endif %}
+                </a>
+                <div class="post-footer">
+                    {% if current_user.is_authenticated %}
+                    <div class="scoring">
+                        {% set rate = namespace(value=0) %}
+                        {% set ns = namespace(found=-1) %}
+                        {% for score in post.scores %}
+                            {% if score.user_id == current_user.id %}
+                                {% set ns.found = score.liked %}
+                            {% endif %}
+                            {% if score.liked == 1 %}
+                                {% set rate.value = rate.value + 1 %}
+                            {% else %}
+                                {% set rate.value = rate.value - 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        <a class="btn btn-outline-secondary" href="/user/{{ post.author.username }}/comments/{{ post.id }}/uprate/comments">
+                            {% if ns.found == 1 %}
+                                <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                            {% endif %}
+                        </a>
+                        <span> {{ rate.value }} </span>
+                        <a class="btn btn-outline-secondary" href="/user/{{ post.author.username }}/comments/{{ post.id }}/downrate/comments">
+                            {% if ns.found == 0 %}
+                                <i class="fa fa-thumbs-down" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fa fa-thumbs-o-down" aria-hidden="true"></i>
+                            {% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
+                    <a class="btn btn-outline-secondary" href="/user/{{ post.author.username }}/{{ post.id }}/comments"><i class="fa fa-comments" aria-hidden="true"></i></a>
+                </div>
+            </div><hr>
+            {% if current_user.is_authenticated %}
+                <form method="POST" class="comment-area" novalidate>
+                    {{ form.hidden_tag() }}
+                    <p>
+                        {{ form.body(class="form-control", placeholder=form.body.label.text, rows="2") }}<br>
+                        {% for error in form.body.errors %}
+                            <span style="color: red;">{{ error }}</span><br>
+                        {% endfor %}
+                    </p>
+                    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                    <div class="status-msg">{{ message }}</div>
+                </form>
+            {% endif %}
+        </div>
+        {% for comment in post.comments%}
+            <div class="comment">
+                <div class="comment-wrap">
+                    <div class="comment-head">
+                        <a class="credit" href="/user/{{ comment.author.username }}">
+                            <img class="credit-avatar" src="/static/img/avatars/{{ comment.author.avatar }}">
+                            <div class="credit-title"> u/{{ comment.author.username }} </div>
+                        </a>
+                        <div class="comment-date">
+                            {{ comment.created_at.date() }}
+                        </div>
+                    </div>
+                    <div class="comment-content"> {{ comment.body }} </div>
+                    {% if current_user.is_authenticated %}
+                    <div class="comment-footer">
+                        <span> * </span>
+                        {% if current_user == comment.author or current_user == post.author %}
+                        <div class="dropdown dropdown-comment">
+                            <div class="btn dropdown-toggle" id="dropdownCommentMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                ---
+                            </div>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownCommentMenuBtn">
+                                <li> <a class="dropdown-item secondary-link" href="/"> Delete </a> </li>
+                                <li> <a class="dropdown-item secondary-link" href="/"> Edit </a> </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            <div><hr>
+        {% endfor %}
+    </div>
+{% endblock content %}

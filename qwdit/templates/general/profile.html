@@ -19,12 +19,24 @@
             <div class="disc">
                 <h4> About {{ user.username }} </h4>
                 <p> {% if user.about %} {{ user.about }} {% else %} There's nothing here...  {% endif %} </p> <br>
+                <p> <i class="fa fa-user" aria-hidden="true"></i> followers - {{ followers }} | following - {{ following }} </p>
                 <p> Joined at {{ user.created_at.date() }} </p>
                 {% if current_user == user %}
                     <a class="btn btn-outline-secondary" href="/settings"> Edit profile </a>
-                    <a class="btn btn-outline-secondary" href="/settings/reset_av"> Reset avatar </a> 
+                    {% if user.avatar != 'defaultuav.png' %}
+                        <a class="btn btn-outline-secondary" href="/settings/reset_av"> Reset avatar </a>
+                    {% endif %}
                 {% endif %}
             </div>
+            {% if current_user.is_authenticated and current_user != user %}
+            <div class="follow">
+                {% if user.is_following(current_user) %}
+                    <a class="btn btn-outline-secondary" href="/user/{{ user.username }}/unfollow"><i class="fa fa-plus-square" aria-hidden="true">Unfollow</i></a>
+                {% else %}
+                    <a class="btn btn-outline-secondary" href="/user/{{ user.username }}/follow"><i class="fa fa-plus-square-o" aria-hidden="true">Follow</i></a>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         <div class="title">
             {{ user.username }}'s posts
@@ -32,16 +44,141 @@
         <div class="overview-posts">
             {% if user.created_posts %}
                 {% for post in user.created_posts %}
-                    <div class="post-wrap border border-5">
-                    {% if post.category == 'text' %}
-                        <a class="post-title">
-                            {{ post.title }}
-                        </a>
-                        <p class="post-body-text">
-                            {{ post.body }}
-                        </p>
-                    {% endif %}
-                    </div> <br>
+                    <div class="post">
+                        {% if post.community_post %}
+                            <div class="post-wrap" >
+                                <div class="post-head">
+                                    <a class="credit" href="/c/{{ post.community_post[0].community.name }}">
+                                        <img class="credit-avatar" src="/static/img/avatars/{{ post.community_post[0].community.avatar }}">
+                                        <div class="credit-title"> c/{{ post.community_post[0].community.name }} </div>
+                                    </a>
+                                    <div class="post-date">
+                                        {{ post.created_at.date() }}
+                                    </div>
+                                    {% if post.creator == current_user or post.community_post[0].community.creator == current_user %}
+                                        <div class="dropdown dropdown-post">
+                                            <div class="btn dropdown-toggle" id="dropdownPostMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                                ---
+                                            </div>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownPostMenuBtn">
+                                                <li> <a class="dropdown-item secondary-link" href="/"> Delete </a> </li>
+                                                <li> <a class="dropdown-item secondary-link" href="/"> Edit </a> </li>
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <a class="post-content" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}">
+                                    {% if post.category == 'text' %}
+                                        <div class="post-title">
+                                            {{ post.title }}
+                                        </div>
+                                        <div class="post-body-text">
+                                            {{ post.body }}
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div class="post-footer">
+                                    {% if current_user.is_authenticated %}
+                                    <div class="scoring">
+                                        {% set rate = namespace(value=0) %}
+                                        {% set ns = namespace(found=-1) %}
+                                        {% for score in post.scores %}
+                                            {% if score.user_id == current_user.id %}
+                                                {% set ns.found = score.liked %}
+                                            {% endif %}
+                                            {% if score.liked == 1 %}
+                                                {% set rate.value = rate.value + 1 %}
+                                            {% else %}
+                                                {% set rate.value = rate.value - 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        <a class="btn btn-outline-secondary" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}/uprate/user">
+                                            {% if ns.found == 1 %}
+                                                <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                                            {% else %}
+                                                <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                                            {% endif %}
+                                        </a>
+                                        <span> {{ rate.value }} </span>
+                                        <a class="btn btn-outline-secondary" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}/downrate/user">
+                                            {% if ns.found == 0 %}
+                                                <i class="fa fa-thumbs-down" aria-hidden="true"></i>
+                                            {% else %}
+                                                <i class="fa fa-thumbs-o-down" aria-hidden="true"></i>
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                    <a class="btn btn-outline-secondary" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}"><i class="fa fa-comments" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="post-wrap">
+                                <div class="post-head">
+                                    <a class="credit" href="/user/{{ post.author.username }}">
+                                        <img class="credit-avatar" src="/static/img/avatars/{{ post.author.avatar }}">
+                                        <div class="credit-title"> u/{{ post.author.username }} </div>
+                                    </a>
+                                    <div class="post-date">
+                                        {{ post.created_at.date() }}
+                                    </div>
+                                    {% if post.author == current_user %}
+                                        <div class="dropdown dropdown-post">
+                                            <div class="btn dropdown-toggle" id="dropdownPostMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                                ---
+                                            </div>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownPostMenuBtn">
+                                                <li> <a class="dropdown-item secondary-link" href="/"> Delete </a> </li>
+                                                <li> <a class="dropdown-item secondary-link" href="/"> Edit </a> </li>
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% if post.category == 'text' %}
+                                    <div class="post-title">
+                                        {{ post.title }}
+                                    </div>
+                                    <div class="post-body-text">
+                                        {{ post.body }}
+                                    </div>
+                                {% endif %}
+                                <div class="post-footer">
+                                    {% if current_user.is_authenticated %}
+                                    <div class="scoring">
+                                        {% set rate = namespace(value=0) %}
+                                        {% set ns = namespace(found=-1) %}
+                                        {% for score in post.scores %}
+                                            {% if score.user_id == current_user.id %}
+                                                {% set ns.found = score.liked %}
+                                            {% endif %}
+                                            {% if score.liked == 1 %}
+                                                {% set rate.value = rate.value + 1 %}
+                                            {% else %}
+                                                {% set rate.value = rate.value - 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        <a class="btn btn-outline-secondary" href="/user/{{ post.author.username }}/comments/{{ post.id }}/uprate/user">
+                                            {% if ns.found == 1 %}
+                                                <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                                            {% else %}
+                                                <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                                            {% endif %}
+                                        </a>
+                                        <span> {{ rate.value }} </span>
+                                        <a class="btn btn-outline-secondary" href="/user/{{ post.author.username }}/comments/{{ post.id }}/downrate/user">
+                                            {% if ns.found == 0 %}
+                                                <i class="fa fa-thumbs-down" aria-hidden="true"></i>
+                                            {% else %}
+                                                <i class="fa fa-thumbs-o-down" aria-hidden="true"></i>
+                                            {% endif %}
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                    <a class="btn btn-outline-secondary" href="/user/{{ post.author.username }}/comments/{{ post.id }}"><i class="fa fa-comments" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
                 {% endfor %}
             {% else %}
                 There's nothing here...

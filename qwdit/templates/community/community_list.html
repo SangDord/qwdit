@@ -1,21 +1,32 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <title> Communities </title>
+    <title> Communities · qwdit</title>
 {% endblock head %}
 
 {% block content %}
     <div class="title"> Communities </div>
     <div class="container">
         {% for community in communities %}
-            <div class="community-wrap border border-5">
-                <a class="community-name" href="/c/{{ community.name }}"> {{ community.name }} </a>
-                {% if community.about %}
-                    <p class="community-about"> {{ community.about }} </p>
-                {% endif %}
-                <a class="link" href="/user/{{ community.creator.username }}">
-                    Creator - <span> {{ community.creator.username }} </span>
-                </a>
+            <div class="post"> 
+                <div class="post-wrap">
+                    <div class="post-head">
+                        <a class="credit" href="/c/{{ community.name }}">
+                            <img class="credit-avatar" src="/static/img/avatars/{{ community.avatar }}">
+                            <div class="credit-title"> c/{{ community.name }}</div>
+                        </a>
+                        <div class="post-date"> Created at {{ community.created_at.date() }} </div>
+                    </div>
+                    <a class="post-content" href="/c/{{ community.name }}">
+                        <div class="post-body-text"> {% if community.about %} {{ community.about }} {% else %} ... {% endif %} </div>
+                    </a>
+                    <div class="post-footer">
+                        <a class="link" href="/user/{{ community.creator.username }}">
+                            Creator - <span> {{ community.creator.username }} </span>
+                            <img class="credit-avatar" src="/static/img/avatars/{{ community.creator.avatar }}">
+                        </a>
+                    </div>
+                </div>
             </div>
         {% endfor %}
     </div>

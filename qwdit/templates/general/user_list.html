@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title> Users · qwdit</title>
+{% endblock head %}
+
+{% block content %}
+    <div class="title"> Users </div>
+    <div class="container">
+        {% for user in users %}
+            <div class="post"> 
+                <div class="post-wrap">
+                    <div class="post-head">
+                        <a class="credit" href="/user/{{ user.username }}">
+                            <img class="credit-avatar" src="/static/img/avatars/{{ user.avatar }}">
+                            <div class="credit-title"> u/{{ user.username }}</div>
+                        </a>
+                        <div class="post-date"> Joined at {{ user.created_at.date() }} </div>
+                    </div>
+                    <a class="post-content" href="/user/{{ user.username }}">
+                        <div class="post-body-text"> {% if user.about %} {{ user.about }} {% else %} ... {% endif %} </div>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

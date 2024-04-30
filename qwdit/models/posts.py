@@ -18,6 +18,8 @@ class Post(SqlAlchemyBase, SerializerMixin):
     
     author = relationship('User')
     community_post = relationship('Community_post', back_populates='post')
+    comments = relationship('Comment', back_populates='post')
+    scores = relationship('PostScore', back_populates='post')
     
     def __init__(self, author_id, title, body, category):
         self.author_id = author_id
@@ -40,19 +42,24 @@ class Community_post(SqlAlchemyBase, SerializerMixin):
         self.community_id = community_id
         
 
-class Comment(SqlAlchemyBase):
+class Comment(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'comments'
     
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     post_id = sa.Column(sa.Integer, sa.ForeignKey('posts.id'))
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     body = sa.Column(sa.String)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     
-    def __init__(self, post_id, user_id):
+    post = relationship('Post')
+    author = relationship('User')
+    
+    def __init__(self, post_id, user_id, body):
         self.post_id = post_id
         self.user_id = user_id
-    
-    
+        self.body = body
+
+
 class PostScore(SqlAlchemyBase):
     __tablename__ = 'post_scores'
     
@@ -60,6 +67,14 @@ class PostScore(SqlAlchemyBase):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     post_id = sa.Column(sa.Integer, sa.ForeignKey('posts.id'))
     liked = sa.Column(sa.Boolean)
+    
+    user = relationship('User')
+    post = relationship('Post')
+    
+    def __init__(self, user_id, post_id, liked):
+        self.user_id = user_id
+        self.post_id = post_id
+        self.liked = liked
     
 
 class CommentScore(SqlAlchemyBase):

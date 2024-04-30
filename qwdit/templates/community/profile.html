@@ -19,12 +19,24 @@
         <div class="disc">
             <h4> About {{ community.name }} </h4>
             <p> {% if community.about %} {{ community.about }} {% else %} There's nothing here...  {% endif %} </p> <br>
-            <p> Joined at {{ community.created_at.date() }} </p>
+            <p> <i class="fa fa-user" aria-hidden="true"></i> Members - {{ members }}</p>
+            <p> Created at {{ community.created_at.date() }} </p>
             {% if current_user == community.creator %}
                 <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/settings"> Edit profile </a>
-                <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/settings"> Reset avatar </a> 
+                {% if community.avatar != 'defaultcav.png' %}
+                    <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/settings/reset_av"> Reset avatar </a> 
+                {% endif %}
             {% endif %}
         </div>
+        {% if current_user.is_authenticated %}
+        <div class="follow">
+            {% if community.is_joined(current_user) %}
+                <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/leave"><i class="fa fa-plus-square" aria-hidden="true"></i> Leave</a>
+            {% else %}
+                <a class="btn btn-outline-secondary" href="/c/{{ community.name }}/join"><i class="fa fa-plus-square-o" aria-hidden="true"></i> Join</a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
     <div class="title">
         {{ community.name }}'s posts
@@ -32,16 +44,80 @@
     <div class="overview-posts">
         {% if community.created_posts %}
             {% for community_post in community.created_posts %}
-                <div class="post-wrap border border-5">
-                {% if community_post.post.category == 'text' %}
-                    <a class="post-title">
-                        {{ community_post.post.title }}
-                    </a>
-                    <p class="post-body-text">
-                        {{ community_post.post.body }}
-                    </p>
-                {% endif %}
-                </div> <br>
+                {% with post = community_post.post %}
+                    <div class="post">
+                        <div class="post-wrap" >
+                            <div class="post-head">
+                                <a class="credit" href="/c/{{ post.community_post[0].community.name }}">
+                                    <img class="credit-avatar" src="/static/img/avatars/{{ post.community_post[0].community.avatar }}">
+                                    <div class="credit-title"> c/{{ post.community_post[0].community.name }} </div>
+                                </a>
+                                <div class="post-date">
+                                    {{ post.created_at.date() }}
+                                </div>
+                                {% if current_user.is_authenticated %}
+                                <div class="dropdown dropdown-post">
+                                    <div class="btn dropdown-toggle" id="dropdownPostMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                        ---
+                                    </div>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownPostMenuBtn">
+                                        <li> <a class="dropdown-item primary-link" href="/c/{{ post.community_post[0].community.name }}/join"> Join to community </a> </li>
+                                        {% if post.creator == current_user or post.community_post[0].community.creator == current_user %}
+                                            <li> <hr class="dropdown-divider"> </li>
+                                            <li> <a class="dropdown-item secondary-link" href="/"> Delete </a> </li>
+                                            <li> <a class="dropdown-item secondary-link" href="/"> Edit </a> </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <a class="post-content" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}">
+                                {% if post.category == 'text' %}
+                                    <div class="post-title">
+                                        {{ post.title }}
+                                    </div>
+                                    <div class="post-body-text">
+                                        {{ post.body }}
+                                    </div>
+                                {% endif %}
+                            </a>
+                            <div class="post-footer">
+                                {% if current_user.is_authenticated %}
+                                <div class="scoring">
+                                    {% set rate = namespace(value=0) %}
+                                    {% set ns = namespace(found=-1) %}
+                                    {% for score in post.scores %}
+                                        {% if score.user_id == current_user.id %}
+                                            {% set ns.found = score.liked %}
+                                        {% endif %}
+                                        {% if score.liked == 1 %}
+                                            {% set rate.value = rate.value + 1 %}
+                                        {% else %}
+                                            {% set rate.value = rate.value - 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <a class="btn btn-outline-secondary" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}/uprate/community">
+                                        {% if ns.found == 1 %}
+                                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                                        {% else %}
+                                            <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                                        {% endif %}
+                                    </a>
+                                    <span> {{ rate.value }} </span>
+                                    <a class="btn btn-outline-secondary" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}/downrate/community">
+                                        {% if ns.found == 0 %}
+                                            <i class="fa fa-thumbs-down" aria-hidden="true"></i>
+                                        {% else %}
+                                            <i class="fa fa-thumbs-o-down" aria-hidden="true"></i>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                {% endif %}
+                                <a class="btn btn-outline-secondary" href="/c/{{ post.community_post[0].community.name }}/comments/{{ post.id }}"><i class="fa fa-comments" aria-hidden="true"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                {% endwith %}
             {% endfor %}
         {% else %}
             There's nothing here...
