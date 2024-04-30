@@ -1,5 +1,18 @@
 # qwdit
+## WebServer + API Project (YL project)
 
-## qwdit is a reddit clone as a learning project for YLyceum
+ *  qwdit - это сайт, в котором вы можете делится информацией в постах. Был вдохновлен reddit. В разработке
 
-## WebServer + API Project
+## Discribe
+qwdit/run.py - это скрипт для запуска фласк приложения (В нем же можно с помощью библиотеки waitress использовать wsgi, что нужно для продакшена)
+
+qwdit/qwdit/__init__.py - это скрипт, где создается экземпляр приложение
+и все основные связки. Там же можно определить, как будет загружаться
+конфиг для приложения (Изначально берет путь до конфига из окружения с
+переменной QWDIT_CONFIG)
+
+qwdit/config_example.py - это пример конфига
+
+qwdit/qwdit/views - директория где располагаются blueprints
+
+#### В разработке
